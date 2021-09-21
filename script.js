@@ -95,7 +95,7 @@ const app = {
 		//select the parent DOM element
 		let container = document.querySelector('.vehicle-container');
 
-		console.log(v);
+		//console.log(v);
 
 		container.innerHTML = `<div id="vehicle-${v.vId}" class="mx-1 border border-secondary rounded bg-light"><a href="#"
 			><img src="${app.imgsURL}${v.img}" alt="Image" class="img-fluid"/></a><div class="item-1-contents"><div class="text-center"><h3><a href="#">${v.make} ${v.model}</a></h3>
@@ -115,47 +115,121 @@ const app = {
 			  </li>
 			</ul></div></div>`;
 
-		const leasefromDp = app.createPikaday('leasefromDp');
-
-		const dateOfBirthDp = app.createPikaday('birthDp');
-
-		const btn = document.querySelector('#set-request');
-		console.log(btn);
-		btn.addEventListener('click', () => {
-			setUser(dateOfBirthDp);
-			setRequest(leasefromDp, dateOfBirthDp, v);
-		});
-	},
-	setRequest: (leasefromDp, dateOfBirthDp, vehicle) => {
-		if (validateInput()) {
-		} else {
-			app.err();
-		}
-	},
-	setUser: (dateOfBirthDp) => {
+		let dateOfBirthDp = app.createPikaday('birthDp');
 		let firstName = document.querySelector('#first-name');
 		let lastName = document.querySelector('#last-name');
+		let leasefromDp = app.createPikaday('leasefromDp');
+		let dropDown = document.querySelector('#lease-last');
+		let options = document.querySelectorAll('.dropdown-item');
+		let leaseLast;
+		options.forEach((o) => {
+			o.addEventListener('click', (e) => {
+				e.preventDefault();
+				dropDown.innerHTML = e.target.innerHTML;
+				if (leasefromDp.toString()) {
+					leaseLast = app.countDate(
+						leasefromDp.toString(),
+						e.target.innerHTML[0]
+					);
+					console.log(leaseLast);
+				}
+			});
+		});
+
+		document
+			.querySelector('#set-request')
+			.addEventListener('click', async function (e) {
+				e.preventDefault();
+
+				if (
+					app.validateInput(
+						firstName.value,
+						lastName.value,
+						dateOfBirthDp.toString(),
+						leasefromDp.toString(),
+						leaseLast
+					)
+				) {
+					let user = await app.setUser(
+						firstName.value,
+						lastName.value,
+						dateOfBirthDp.toString()
+					);
+					//console.log(user);
+					let request = await app.setRequest(
+						leasefromDp.toString(),
+						leaseLast,
+						v.vId,
+						user.uid
+					);
+					console.log(request);
+				} else {
+					console.warn('Wrong input!');
+				}
+			});
+	},
+	setRequest: async function (leaseFrom, leaseLast, vehicleID, userID) {
+		console.log(leaseFrom, leaseLast, vehicleID, userID);
+		let url = app.baseURL + 'Request';
+		let req = new Request(url, {
+			method: 'POST',
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				leaseBegin: leaseFrom,
+				leaseLast: leaseLast,
+				userID: userID,
+				vehicleID: vehicleID,
+			}),
+		});
+		return await (await fetch(req).catch(app.err)).json();
+	},
+	setUser: async function (fName, lName, Dp) {
+		let url = app.baseURL + 'User';
+		let req = new Request(url, {
+			method: 'POST',
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				firstName: fName,
+				lastName: lName,
+				dateOfBirth: Dp,
+			}),
+		});
+
+		return await (await fetch(req).catch(app.err)).json();
 	},
 	getVehicleID: (e) => {
 		localStorage.setItem('vID', e.target.id.replace('btn-', ''));
 		//console.log(localStorage.getItem('vID'));
 	},
-	validateInput: (firstName, lastName, dateOfBirth, leaseFrom, leasePeriod) => {
-		if (firstName && lastName && dateOfBirth && leaseFrom && leasePeriod) {
+	validateInput: (firstName, lastName, dateOfBirth, leaseFrom, leaseLast) => {
+		console.log(firstName, lastName, dateOfBirth, leaseFrom, leaseLast);
+		if (firstName && lastName && dateOfBirth && leaseFrom && leaseLast) {
 			return true;
 		} else {
 			return false;
 		}
 	},
+	countDate: (date, increse) => {
+		let newDate = new Date(date);
+		const day = newDate.getDate();
+		const month = newDate.getMonth() + 1;
+		const year = newDate.getFullYear() + parseInt(increse);
+		return `${year}-${month}-${day}`;
+	},
 	createPikaday: (id) => {
 		return new Pikaday({
-			field: document.getElementById(`${id}`),
-			format: 'D/M/YYYY',
+			field: document.querySelector(`#${id}`),
 			toString(date, format) {
 				const day = date.getDate();
 				const month = date.getMonth() + 1;
 				const year = date.getFullYear();
-				return `${day}-${month}-${year}`;
+				return `${year}-${month}-${day}`;
 			},
 		});
 	},
