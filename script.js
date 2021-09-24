@@ -1,7 +1,7 @@
 const app = {
 	//API URL
 	baseURL: 'http://localhost:12506/api/',
-	
+
 	//A Chrome webserver URL, this hosts the images from local harddrive
 	imgsURL: 'http://127.0.0.1:8887/',
 
@@ -161,8 +161,8 @@ const app = {
 				e.preventDefault();
 
 				//if the input is valid calls the post methods:
-					//-inserts a new user what gives back the new ID
-					//-inserts a new request with the userID
+				//-inserts a new user what gives back the new ID
+				//-inserts a new request with the userID
 				if (
 					app.validateInput(
 						firstName.value,
@@ -184,8 +184,8 @@ const app = {
 						v.vId,
 						user.uid
 					);
-					if(request){
-						alert("Your request just sent!");
+					if (request) {
+						alert('Your request just sent!');
 					}
 					//console.log(request);
 				} else {
@@ -197,7 +197,7 @@ const app = {
 	//insert request POST method
 	setRequest: async function (leaseFrom, leaseLast, vehicleID, userID) {
 		//console.log(leaseFrom, leaseLast, vehicleID, userID);
-		let url = app.baseURL + 'Request';
+		let url = app.baseURL + 'Reservation';
 		let req = new Request(url, {
 			method: 'POST',
 			mode: 'cors',
@@ -207,16 +207,16 @@ const app = {
 			body: JSON.stringify({
 				leaseBegin: leaseFrom,
 				leaseLast: leaseLast,
-				userID: userID,
+				customerID: userID,
 				vehicleID: vehicleID,
 			}),
 		});
 		return await (await fetch(req).catch(app.err)).json();
 	},
-	
+
 	//insert user POST method
 	setUser: async function (fName, lName, Dp) {
-		let url = app.baseURL + 'User';
+		let url = app.baseURL + 'Customer';
 		let req = new Request(url, {
 			method: 'POST',
 			mode: 'cors',
@@ -270,7 +270,7 @@ const app = {
 			},
 		});
 	},
-	
+
 	//customizable error
 	err: (err) => {
 		let container = document.querySelector('.vehicle-container');
