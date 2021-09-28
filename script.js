@@ -156,15 +156,16 @@ const app = {
 			});
 		});
 
-		//get the send request button and listen on a click event
+		//get the reserve button and listen on a click event
 		document
 			.querySelector('#set-request')
 			.addEventListener('click', async function (e) {
 				e.preventDefault();
 
 				//if the input is valid calls the post methods:
-				//-inserts a new user what gives back the new ID
-				//-inserts a new request with the userID
+				//-inserts a new customer what gives back the new ID
+				//-inserts a new reservation with the customerID
+				//after a successfull insterted reservation changes the vehicles status to "reserved"
 				if (
 					app.validateInput(
 						firstName.value,
@@ -176,33 +177,36 @@ const app = {
 						leaseLast
 					)
 				) {
-					let user = await app.setUser(
+					let customer = await app.setCustomer(
 						firstName.value,
 						lastName.value,
 						email.value,
 						phoneNo.value,
 						dateOfBirthDp.toString()
 					);
-					//console.log(user);
-					let request = await app.setRequest(
+					//console.log(customer);
+					let reservation = await app.setReservation(
 						leasefromDp.toString(),
 						leaseLast,
 						v.vId,
-						user.uid
+						customer.cid
 					);
-					if (request) {
-						alert('Your request just sent!');
+
+					if (reservation) {
+						alert('Your reservation just sent!');
+
+						let status = await app.putVehicle(v.vId);
+						if (status) console.log(`changed status to ${v.status}!`);
 					}
-					//console.log(request);
 				} else {
 					console.warn('Wrong input!');
 				}
 			});
 	},
 
-	//insert request POST method
-	setRequest: async function (leaseFrom, leaseLast, vehicleID, userID) {
-		//console.log(leaseFrom, leaseLast, vehicleID, userID);
+	//insert reservation POST method
+	setReservation: async function (leaseFrom, leaseLast, vehicleID, customerID) {
+		//console.log(leaseFrom, leaseLast, vehicleID, customerID);
 		let url = app.baseURL + 'Reservation';
 		let req = new Request(url, {
 			method: 'POST',
@@ -213,15 +217,15 @@ const app = {
 			body: JSON.stringify({
 				leaseBegin: leaseFrom,
 				leaseLast: leaseLast,
-				customerID: userID,
+				customerID: customerID,
 				vehicleID: vehicleID,
 			}),
 		});
 		return await (await fetch(req).catch(app.err)).json();
 	},
 
-	//insert user POST method
-	setUser: async function (fName, lName, Dp) {
+	//insert customer POST method
+	setCustomer: async function (fName, lName, mail, phone, Dp) {
 		let url = app.baseURL + 'Customer';
 		let req = new Request(url, {
 			method: 'POST',
@@ -232,11 +236,28 @@ const app = {
 			body: JSON.stringify({
 				firstName: fName,
 				lastName: lName,
+				email: mail,
+				phoneNo: phone,
 				dateOfBirth: Dp,
 			}),
 		});
 
 		return await (await fetch(req).catch(app.err)).json();
+	},
+
+	//put request to change vehicle status after reservation
+	putVehicle: async function (id) {
+		let url = `${app.baseURL}Vehicles?id=${id}`;
+		let req = new Request(url, {
+			method: 'PUT',
+			mode: 'cors',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+		if (await fetch(req).catch(app.err)) {
+			return true;
+		}
 	},
 
 	//saves the selected vehicle ID into a local storage
