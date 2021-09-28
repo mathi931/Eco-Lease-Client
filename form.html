@@ -18,7 +18,7 @@
 			<div class="container">
 				<div class="row justify-content-center text-center">
 					<div class="col-7 text-center mb-5">
-						<h2>Contact Us Or Use This Form To Rent A Car</h2>
+						<h2>Contact Us Or Use This Form To Lease A Car</h2>
 						<p>
 							Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nemo
 							assumenda, dolorum necessitatibus eius earum voluptates sed!
@@ -48,7 +48,25 @@
 							</div>
 
 							<div class="form-group row py-2">
+								<div class="col-md-6 mb-4 mb-lg-0">
+									<input
+										id="email"
+										type="text"
+										class="form-control"
+										placeholder="E-mail address"
+									/>
+								</div>
+								<div class="col-md-6">
+									<input
+										id="phoneNo"
+										type="text"
+										class="form-control"
+										placeholder="Telephone Number"
+									/>
+								</div>
+							</div>
 
+							<div class="form-group row py-2">
 								<div class="col-md-4">
 									<input
 										class="dp"
@@ -70,7 +88,7 @@
 								<div class="col-md-4">
 									<div class="dropdown">
 										<button
-											class="btn dropdown-toggle"
+											class="btn dropdown-toggle dp"
 											type="button"
 											id="lease-last"
 											data-bs-toggle="dropdown"
@@ -78,10 +96,7 @@
 										>
 											Lease Period
 										</button>
-										<ul
-											class="dropdown-menu"
-											aria-labelledby="lease-last"
-										>
+										<ul class="dropdown-menu" aria-labelledby="lease-last">
 											<li><a class="dropdown-item" href="#">1 Year</a></li>
 											<li>
 												<a class="dropdown-item" href="#">2 Year</a>
@@ -108,9 +123,12 @@
 							</div>
 							<div class="form-group row py-2">
 								<div class="col-md-6 mr-auto">
-									<button 										id="set-request"
-									class="btn btn-block btn-primary text-white py-3 px-5"
-									value="Send a Request">Reserve!
+									<button
+										id="set-request"
+										class="btn btn-block btn-primary text-white py-3 px-5"
+										value="Send a Request"
+									>
+										Reserve!
 									</button>
 								</div>
 							</div>

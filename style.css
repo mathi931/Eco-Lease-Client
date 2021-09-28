@@ -18,6 +18,8 @@
 	padding: 0.4rem;
 	border: rgb(201, 200, 200) 1px solid;
 	border-radius: 5px;
+	background-color: white;
+	color: #636363;
 }
 .dp:focus {
 	border-color: #000000;

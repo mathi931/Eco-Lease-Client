@@ -79,7 +79,7 @@ const app = {
 			vehicles.forEach((v) => {
 				container.innerHTML += `<div class="col-lg-4 col-md-6 mb-2 pb-5"><div id="vehicle-${v.vId}" class="mx-1 border border-secondary rounded bg-light"><a href="#"
 				><img src="${app.imgsURL}${v.img}" alt="Image" class="img-fluid"/></a><div class="item-1-contents"><div class="text-center"><h3><a href="#">${v.make} ${v.model}</a></h3>
-				  <div class="lease-price p-2"><span class="spec">$250</span>/month</div></div>
+				  <div class="lease-price p-2"><span class="spec">$${v.price}</span>/month</div></div>
 				<ul class="specs list-unstyled ">
 				  <li>
 					<span>Registered:</span>
@@ -115,6 +115,8 @@ const app = {
 		let dateOfBirthDp = app.createPikaday('birthDp');
 		let firstName = document.querySelector('#first-name');
 		let lastName = document.querySelector('#last-name');
+		let email = document.querySelector('#email');
+		let phoneNo = document.querySelector('#phoneNo');
 		let leasefromDp = app.createPikaday('leasefromDp');
 		let dropDown = document.querySelector('#lease-last');
 		let options = document.querySelectorAll('.dropdown-item');
@@ -123,7 +125,7 @@ const app = {
 		//loads the html into the parent element
 		container.innerHTML = `<div id="vehicle-${v.vId}" class="mx-1 border border-secondary rounded bg-light"><a href="#"
 			><img src="${app.imgsURL}${v.img}" alt="Image" class="img-fluid"/></a><div class="item-1-contents"><div class="text-center"><h3><a href="#">${v.make} ${v.model}</a></h3>
-			  <div class="lease-price p-2"><span class="spec">$250</span>/month</div></div>
+			  <div class="lease-price p-2"><span class="spec">$${v.price}</span>/month</div></div>
 			<ul class="specs list-unstyled ">
 			  <li>
 				<span>Registered:</span>
@@ -167,6 +169,8 @@ const app = {
 					app.validateInput(
 						firstName.value,
 						lastName.value,
+						email.value,
+						phoneNo.value,
 						dateOfBirthDp.toString(),
 						leasefromDp.toString(),
 						leaseLast
@@ -175,6 +179,8 @@ const app = {
 					let user = await app.setUser(
 						firstName.value,
 						lastName.value,
+						email.value,
+						phoneNo.value,
 						dateOfBirthDp.toString()
 					);
 					//console.log(user);
@@ -240,9 +246,25 @@ const app = {
 	},
 
 	//validates the input
-	validateInput: (firstName, lastName, dateOfBirth, leaseFrom, leaseLast) => {
+	validateInput: (
+		firstName,
+		lastName,
+		email,
+		phoneNo,
+		dateOfBirth,
+		leaseFrom,
+		leaseLast
+	) => {
 		//console.log(firstName, lastName, dateOfBirth, leaseFrom, leaseLast);
-		if (firstName && lastName && dateOfBirth && leaseFrom && leaseLast) {
+		if (
+			firstName &&
+			lastName &&
+			email &&
+			phoneNo &&
+			dateOfBirth &&
+			leaseFrom &&
+			leaseLast
+		) {
 			return true;
 		} else {
 			return false;
