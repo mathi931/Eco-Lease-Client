@@ -2,9 +2,6 @@ const app = {
 	//API URL
 	baseURL: 'http://localhost:12506/api/',
 
-	//A Chrome webserver URL, this hosts the images from local harddrive
-	imgsURL: 'http://127.0.0.1:8887/',
-
 	//triggers the app
 	init: () => {
 		document.addEventListener('DOMContentLoaded', app.load);
@@ -47,6 +44,7 @@ const app = {
 	//fetches the single vehicle data what selected and calls the showForm method what loads the data into the DOM
 	getVehicle: () => {
 		let vID = localStorage.getItem('vID');
+		//console.log(vID);
 		if (vID) {
 			let url = app.baseURL + `Vehicles/${vID}`;
 			let req = new Request(url, {
@@ -71,14 +69,15 @@ const app = {
 		let vehicles = [...unfilteredVehicles].filter(
 			(v) => v.status === 'Available'
 		);
-		console.log(vehicles);
+		//console.log(vehicles);
 
 		//if there are vehicles available;
 		if (vehicles) {
 			//for each vehicle pass the HTML into the parent element
 			vehicles.forEach((v) => {
+				//console.log(v);
 				container.innerHTML += `<div class="col-lg-4 col-md-6 mb-2 pb-5"><div id="vehicle-${v.vId}" class="mx-1 border border-secondary rounded bg-light"><a href="#"
-				><img src="${app.imgsURL}${v.img}" alt="Image" class="img-fluid"/></a><div class="item-1-contents"><div class="text-center"><h3><a href="#">${v.make} ${v.model}</a></h3>
+				><img src="${app.baseURL}Files/${v.img}" alt="Image" class="img-fluid"/></a><div class="item-1-contents"><div class="text-center"><h3><a href="#">${v.make} ${v.model}</a></h3>
 				  <div class="lease-price p-2"><span class="spec">$${v.price}</span>/month</div></div>
 				<ul class="specs list-unstyled ">
 				  <li>
@@ -93,11 +92,12 @@ const app = {
 					<span>Km:</span>
 					<span class="spec">${v.km}</span>
 				  </li>
-				</ul><div class="d-flex "><a href="form.html" id="btn-${v.vId}" class="btn btn-primary mx-auto mb-3 btn-lease">Lease Now</a></div></div></div></div>`;
+				</ul><div class="d-flex "><a href="form.html" id="btn-${v.vid}" class="btn btn-primary mx-auto mb-3 btn-lease">Lease Now</a></div></div></div></div>`;
 			});
 			//select all the buttons with an event what triggers the getVehicleID method and opens the form.html page
 			let buttons = document.querySelectorAll('.btn-lease');
 			buttons.forEach((b) => {
+				//console.log(b);
 				b.addEventListener('click', (e) => app.getVehicleID(e));
 			});
 			//if there arent any vehicles
@@ -108,7 +108,7 @@ const app = {
 
 	//loads the form.html
 	showForm: (v) => {
-		//console.log(v);
+		console.log(v);
 
 		//selects the DOM elements
 		let container = document.querySelector('.vehicle-container');
@@ -120,11 +120,12 @@ const app = {
 		let leasefromDp = app.createPikaday('leasefromDp');
 		let dropDown = document.querySelector('#lease-last');
 		let options = document.querySelectorAll('.dropdown-item');
+		let errorContainer = document.querySelector('#error-cont');
 		let leaseLast;
 
 		//loads the html into the parent element
 		container.innerHTML = `<div id="vehicle-${v.vId}" class="mx-1 border border-secondary rounded bg-light"><a href="#"
-			><img src="${app.imgsURL}${v.img}" alt="Image" class="img-fluid"/></a><div class="item-1-contents"><div class="text-center"><h3><a href="#">${v.make} ${v.model}</a></h3>
+			><img src="${app.baseURL}Files/${v.img}" alt="Image" class="img-fluid"/></a><div class="item-1-contents"><div class="text-center"><h3><a href="#">${v.make} ${v.model}</a></h3>
 			  <div class="lease-price p-2"><span class="spec">$${v.price}</span>/month</div></div>
 			<ul class="specs list-unstyled ">
 			  <li>
@@ -162,21 +163,26 @@ const app = {
 			.addEventListener('click', async function (e) {
 				e.preventDefault();
 
+				//clears old errors
+				errorContainer.innerHTML = '';
+
 				//if the input is valid calls the post methods:
 				//-inserts a new customer what gives back the new ID
 				//-inserts a new reservation with the customerID
 				//after a successfull insterted reservation changes the vehicles status to "reserved"
-				if (
-					app.validateInput(
-						firstName.value,
-						lastName.value,
-						email.value,
-						phoneNo.value,
-						dateOfBirthDp.toString(),
-						leasefromDp.toString(),
-						leaseLast
-					)
-				) {
+				//gets the errors what is an array, if there is error, signify to the user
+				let errors = app.validateInput(
+					firstName.value,
+					lastName.value,
+					email.value,
+					phoneNo.value,
+					dateOfBirthDp.toString(),
+					leasefromDp.toString(),
+					leaseLast
+				);
+
+				//if there is errors
+				if (errors.length == 0) {
 					let customer = await app.setCustomer(
 						firstName.value,
 						lastName.value,
@@ -184,11 +190,12 @@ const app = {
 						phoneNo.value,
 						dateOfBirthDp.toString()
 					);
+
 					//console.log(customer);
 					let reservation = await app.setReservation(
 						leasefromDp.toString(),
 						leaseLast,
-						v.vId,
+						v.vid,
 						customer.cid
 					);
 
@@ -199,7 +206,9 @@ const app = {
 						if (status) console.log(`changed status to ${v.status}!`);
 					}
 				} else {
-					console.warn('Wrong input!');
+					errors.forEach((error) => {
+						errorContainer.innerHTML += `<p>${error}</p>`;
+					});
 				}
 			});
 	},
@@ -207,7 +216,7 @@ const app = {
 	//insert reservation POST method
 	setReservation: async function (leaseFrom, leaseLast, vehicleID, customerID) {
 		//console.log(leaseFrom, leaseLast, vehicleID, customerID);
-		let url = app.baseURL + 'Reservation';
+		let url = app.baseURL + 'Reservations';
 		let req = new Request(url, {
 			method: 'POST',
 			mode: 'cors',
@@ -217,8 +226,13 @@ const app = {
 			body: JSON.stringify({
 				leaseBegin: leaseFrom,
 				leaseLast: leaseLast,
-				customerID: customerID,
-				vehicleID: vehicleID,
+				status: 'Pending',
+				customer: {
+					cid: customerID,
+				},
+				vehicle: {
+					vid: vehicleID,
+				},
 			}),
 		});
 		return await (await fetch(req).catch(app.err)).json();
@@ -226,7 +240,7 @@ const app = {
 
 	//insert customer POST method
 	setCustomer: async function (fName, lName, mail, phone, Dp) {
-		let url = app.baseURL + 'Customer';
+		let url = `${app.baseURL}Customers`;
 		let req = new Request(url, {
 			method: 'POST',
 			mode: 'cors',
@@ -236,9 +250,9 @@ const app = {
 			body: JSON.stringify({
 				firstName: fName,
 				lastName: lName,
+				dateOfBirth: Dp,
 				email: mail,
 				phoneNo: phone,
-				dateOfBirth: Dp,
 			}),
 		});
 
@@ -262,8 +276,9 @@ const app = {
 
 	//saves the selected vehicle ID into a local storage
 	getVehicleID: (e) => {
+		//console.log(e.target);
 		localStorage.setItem('vID', e.target.id.replace('btn-', ''));
-		//console.log(localStorage.getItem('vID'));
+		console.log(localStorage.getItem('vID'));
 	},
 
 	//validates the input
@@ -276,19 +291,48 @@ const app = {
 		leaseFrom,
 		leaseLast
 	) => {
-		//console.log(firstName, lastName, dateOfBirth, leaseFrom, leaseLast);
+		//if the input invalid, pushes the message to an array what is returned by the function
+		let messages = [];
+		let currentYear = new Date().getFullYear();
+
+		if (firstName.length < 3 || firstName.length > 20) {
+			messages.push('First Name length must be between 3-20 characters!');
+		}
+
+		if (lastName.length < 3 || lastName.length > 20) {
+			messages.push('Last Name length must be between 3-20 characters!');
+		}
+
+		if (!validateEmail(email)) {
+			messages.push('Invalid Email address!');
+		}
+
+		if (phoneNo.length < 5 || phoneNo.length > 15) {
+			messages.push('Invalid Phone number!');
+		}
+
 		if (
-			firstName &&
-			lastName &&
-			email &&
-			phoneNo &&
-			dateOfBirth &&
-			leaseFrom &&
-			leaseLast
+			dateOfBirth.substring(0, 4) < currentYear - 120 ||
+			dateOfBirth.substring(0, 4) > currentYear - 17
 		) {
-			return true;
-		} else {
-			return false;
+			messages.push('Age must be atleast 18 and max 120');
+		}
+
+		if (leaseFrom.length == 0 || Date.parse(leaseFrom) < Date.now()) {
+			messages.push(
+				'Leasing can not begin in the past and date must be selected'
+			);
+		}
+
+		if (document.querySelector('#lease-last').textContent.includes('Lease')) {
+			messages.push('Must select a lease period');
+		}
+
+		return messages;
+
+		function validateEmail(email) {
+			const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+			return re.test(String(email).toLowerCase());
 		}
 	},
 
