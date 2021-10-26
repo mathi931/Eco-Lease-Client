@@ -1,6 +1,6 @@
 const app = {
 	//API URL
-	baseURL: 'http://localhost:12506/api/',
+	baseURL: 'http://localhost:5000/api/',
 
 	//triggers the app
 	init: () => {
@@ -38,7 +38,7 @@ const app = {
 		fetch(req)
 			.then((resp) => resp.json())
 			.then(app.showVehicles)
-			.catch(app.err);
+			.catch(() => (window.location = 'error.html'));
 	},
 
 	//fetches the single vehicle data what selected and calls the showForm method what loads the data into the DOM
